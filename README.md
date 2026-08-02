@@ -44,7 +44,6 @@ cd thinkpad-fullscreen-backlight
 Run the installer:
 
 ```bash
-chmod +x install.sh
 ./install.sh
 ```
 
@@ -53,7 +52,6 @@ The installer will request your password only when installing the privileged hel
 ## Uninstallation
 
 ```bash
-chmod +x uninstall.sh
 ./uninstall.sh
 ```
 
