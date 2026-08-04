@@ -71,7 +71,7 @@ KWin script is disabled and removed before the prompt appears.
 The extension turns the keyboard backlight off once when fullscreen begins.
 
 It does not lock the backlight off. If you manually change the keyboard
-backlight through GNOME while remaining fullscreen, that choice is respected.
+backlight through KDE while remaining fullscreen, that choice is respected.
 
 - Enter fullscreen → backlight turns off
 - Turn it on manually while fullscreen → it stays on
