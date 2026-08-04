@@ -49,7 +49,9 @@ The installer asks whether the backlight should return to level `1` or `2` after
 
 Do not run the entire installer with `sudo`. It requests elevation only when installing the small helper into `/usr/local/bin`.
 
-Running the installer again upgrades the KWin script and lets you change the selected restore brightness.
+Running the installer again updates the existing installation and lets you change the selected restore brightness.
+
+After updating, log out and back in (or restart the Plasma session) to ensure the new version of the KWin script is loaded.
 
 ## Uninstallation
 
