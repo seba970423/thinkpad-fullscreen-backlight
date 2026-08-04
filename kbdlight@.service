@@ -1,6 +1,0 @@
-[Unit]
-Description=Set ThinkPad keyboard backlight to %i
-
-[Service]
-Type=oneshot
-ExecStart=/usr/local/bin/kbdlight %i
