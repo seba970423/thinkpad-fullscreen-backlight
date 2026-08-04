@@ -2,9 +2,6 @@ const SYSTEMD_SERVICE = "org.freedesktop.systemd1";
 const SYSTEMD_PATH = "/org/freedesktop/systemd1";
 const SYSTEMD_MANAGER = "org.freedesktop.systemd1.Manager";
 
-const configuredBrightness = Number(readConfig("RestoreBrightness", 2));
-const restoreBrightness = configuredBrightness === 1 ? 1 : 2;
-
 let lightIsOff = false;
 
 function startUnit(unitName) {
@@ -45,7 +42,7 @@ function updateBacklight() {
     }
 
     lightIsOff = shouldBeOff;
-    startUnit(`kbdlight@${shouldBeOff ? 0 : restoreBrightness}.service`);
+    startUnit(`kbdlight@${shouldBeOff ? "off" : "restore"}.service`);
 }
 
 function watchWindow(window) {

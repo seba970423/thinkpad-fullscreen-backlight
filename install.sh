@@ -7,9 +7,7 @@ HELPER_SOURCE="$PROJECT_DIR/kbdlight.c"
 HELPER_BUILD="$PROJECT_DIR/kbdlight"
 SERVICE_SOURCE="$PROJECT_DIR/kbdlight@.service"
 KWIN_PLUGIN_ID="thinkpad-fullscreen-backlight"
-KWIN_CONFIG_GROUP="Script-$KWIN_PLUGIN_ID"
 SYSFS_BRIGHTNESS="/sys/class/leds/tpacpi::kbd_backlight/brightness"
-SYSFS_MAX_BRIGHTNESS="/sys/class/leds/tpacpi::kbd_backlight/max_brightness"
 
 cleanup() {
     rm -f "$HELPER_BUILD"
@@ -19,6 +17,26 @@ trap cleanup EXIT
 fail() {
     printf 'Error: %s\n' "$1" >&2
     exit 1
+}
+
+
+prompt_logout() {
+    local choice
+
+    printf '\n'
+    read -r -p "Log out now? [y/N]: " choice
+
+    case "${choice,,}" in
+        y|yes)
+            printf '%s\n' "Logging out..."
+            if ! qdbus6 org.kde.Shutdown /Shutdown org.kde.Shutdown.logout; then
+                printf '%s\n' "Unable to log out automatically. Please log out manually." >&2
+            fi
+            ;;
+        *)
+            printf '%s\n' "Logout skipped."
+            ;;
+    esac
 }
 
 if [[ $EUID -eq 0 ]]; then
@@ -33,30 +51,15 @@ done
 [[ -f "$SERVICE_SOURCE" ]] || fail "Missing service file: $SERVICE_SOURCE"
 [[ -e "$SYSFS_BRIGHTNESS" ]] || fail "ThinkPad keyboard backlight interface not found: $SYSFS_BRIGHTNESS"
 
-max_brightness=2
-if [[ -r "$SYSFS_MAX_BRIGHTNESS" ]]; then
-    read -r max_brightness < "$SYSFS_MAX_BRIGHTNESS"
-fi
-
-if (( max_brightness < 2 )); then
-    fail "This keyboard reports a maximum brightness of $max_brightness; levels 1 and 2 are required."
-fi
-
-printf '%s\n' "Choose the keyboard backlight level to restore after leaving fullscreen:"
-printf '%s\n' "  1) Low"
-printf '%s\n' "  2) High (recommended)"
-
-while true; do
-    read -r -p "Brightness level [1-2, default 2]: " restore_brightness
-    restore_brightness="${restore_brightness:-2}"
-
-    case "$restore_brightness" in
-        1|2) break ;;
-        *) printf '%s\n' "Please enter 1 or 2." ;;
-    esac
-done
-
 USER_GROUP="$(id -gn)"
+
+printf '%s\n' "ThinkPad Fullscreen Backlight for KDE Plasma"
+printf '\n%s\n' "This installer will:"
+printf '%s\n' "  - compile and install the restricted keyboard-backlight helper"
+printf '%s\n' "  - install the systemd user service"
+printf '%s\n' "  - install and enable the KWin script"
+printf '%s\n' "  - preserve Plasma's current keyboard-backlight state"
+printf '\n'
 
 printf '%s\n' "Compiling keyboard-backlight helper..."
 gcc -O2 -Wall -Wextra -Wpedantic -o "$HELPER_BUILD" "$HELPER_SOURCE"
@@ -83,13 +86,6 @@ else
     kpackagetool6 --type=KWin/Script --install "$PROJECT_DIR"
 fi
 
-printf '%s\n' "Saving restore brightness level: $restore_brightness"
-kwriteconfig6 \
-    --file kwinrc \
-    --group "$KWIN_CONFIG_GROUP" \
-    --key RestoreBrightness \
-    "$restore_brightness"
-
 printf '%s\n' "Enabling KWin script..."
 kwriteconfig6 \
     --file kwinrc \
@@ -101,6 +97,10 @@ printf '%s\n' "Reloading KWin configuration..."
 qdbus6 org.kde.KWin /KWin reconfigure
 
 printf '\nInstallation complete.\n'
-printf 'The keyboard backlight will restore to level %s after fullscreen.\n' "$restore_brightness"
+printf '%s\n' "The keyboard backlight now follows Plasma's current state:"
+printf '%s\n' "  - Off stays off after fullscreen"
+printf '%s\n' "  - Level 1 restores to level 1"
+printf '%s\n' "  - Level 2 restores to level 2"
 printf '%s\n' "Enter and leave fullscreen to test it."
-printf '%s\n' "A logout and login may be required if it does not react immediately."
+printf '%s\n' "A fresh Plasma session ensures the installed script is loaded."
+prompt_logout

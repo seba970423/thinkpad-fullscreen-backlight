@@ -3,13 +3,33 @@
 set -euo pipefail
 
 KWIN_PLUGIN_ID="thinkpad-fullscreen-backlight"
-KWIN_CONFIG_GROUP="Script-$KWIN_PLUGIN_ID"
 SERVICE_FILE="$HOME/.config/systemd/user/kbdlight@.service"
 HELPER_FILE="/usr/local/bin/kbdlight"
+STATE_FILE="/run/user/$(id -u)/thinkpad-fullscreen-backlight.state"
 
 fail() {
     printf 'Error: %s\n' "$1" >&2
     exit 1
+}
+
+
+prompt_logout() {
+    local choice
+
+    printf '\n'
+    read -r -p "Log out now? [y/N]: " choice
+
+    case "${choice,,}" in
+        y|yes)
+            printf '%s\n' "Logging out..."
+            if ! qdbus6 org.kde.Shutdown /Shutdown org.kde.Shutdown.logout; then
+                printf '%s\n' "Unable to log out automatically. Please log out manually." >&2
+            fi
+            ;;
+        *)
+            printf '%s\n' "Logout skipped."
+            ;;
+    esac
 }
 
 if [[ $EUID -eq 0 ]]; then
@@ -33,17 +53,12 @@ kpackagetool6 \
     --remove "$KWIN_PLUGIN_ID" \
     >/dev/null 2>&1 || true
 
-printf '%s\n' "Removing saved brightness setting..."
-kwriteconfig6 \
-    --file kwinrc \
-    --group "$KWIN_CONFIG_GROUP" \
-    --key RestoreBrightness \
-    --delete 2>/dev/null || true
-
 printf '%s\n' "Removing systemd user service..."
 rm -f "$SERVICE_FILE"
 systemctl --user daemon-reload
 systemctl --user reset-failed >/dev/null 2>&1 || true
+
+rm -f "$STATE_FILE"
 
 if [[ -e "$HELPER_FILE" ]]; then
     printf '%s\n' "Removing privileged helper..."
@@ -57,3 +72,4 @@ if command -v qdbus6 >/dev/null 2>&1; then
 fi
 
 printf '\n%s\n' "Uninstallation complete."
+prompt_logout

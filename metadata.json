@@ -2,8 +2,8 @@
     "KPlugin": {
         "Id": "thinkpad-fullscreen-backlight",
         "Name": "ThinkPad Fullscreen Backlight",
-        "Description": "Turns off the keyboard backlight while a window is fullscreen",
-        "Version": "1.1",
+        "Description": "Turns off the keyboard backlight while a window is fullscreen and restores Plasma's previous state",
+        "Version": "1.2",
         "License": "MIT",
         "Authors": [
             {

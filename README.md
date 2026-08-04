@@ -1,78 +1,71 @@
-# ThinkPad Fullscreen Backlight
+# ThinkPad Fullscreen Backlight for KDE Plasma
 
-Automatically turns off the ThinkPad keyboard backlight whenever a window enters fullscreen on KDE Plasma 6 Wayland, then restores the user's selected brightness level when fullscreen ends.
+Automatically turns off the ThinkPad keyboard backlight whenever a relevant
+window enters fullscreen, then restores Plasma's previous keyboard-backlight
+state when fullscreen ends.
 
 ## Features
 
-- Event-driven; no polling
 - Native KDE Plasma 6 KWin script
-- Selectable restore brightness: level 1 or 2
-- Uses a systemd user service
-- Tiny privileged C helper restricted to brightness values 0, 1, and 2
-- Includes an uninstaller
+- Event-driven fullscreen detection; no polling
+- Respects Plasma's current keyboard-backlight state
+- Off stays off after fullscreen
+- Brightness level 1 restores to level 1
+- Brightness level 2 restores to level 2
+- Minimal privileged C helper
+- Installer and uninstaller
+- Optional logout prompt after installation and uninstallation
 
 ## Requirements
 
 - KDE Plasma 6
-- Wayland
-- ThinkPad with `thinkpad_acpi` keyboard backlight support
-- systemd
-- GCC
-- `kpackagetool6`, `kwriteconfig6`, and `qdbus6`
-
-## Supported hardware
-
-Currently tested on ThinkPad laptops exposing this keyboard backlight interface:
-
-```text
-/sys/class/leds/tpacpi::kbd_backlight
-```
-
-The installer also checks that the device reports support for brightness level 2.
+- ThinkPad keyboard backlight exposed as `tpacpi::kbd_backlight`
+- `gcc`
+- `kpackagetool6`
+- `kwriteconfig6`
+- `qdbus6`
+- systemd user services
 
 ## Installation
-
-Clone the repository:
-
-```bash
-git clone https://github.com/seba970423/thinkpad-fullscreen-backlight.git
-cd thinkpad-fullscreen-backlight
-```
-
-Run the installer as your normal user:
 
 ```bash
 ./install.sh
 ```
 
-The installer asks whether the backlight should return to level `1` or `2` after leaving fullscreen. Pressing Enter selects level `2`.
+Run the installer as your normal user. It requests `sudo` only when installing
+the restricted helper into `/usr/local/bin/kbdlight`.
 
-Do not run the entire installer with `sudo`. It requests elevation only when installing the small helper into `/usr/local/bin`.
+At the end, the installer asks:
 
-Running the installer again updates the existing installation and lets you change the selected restore brightness.
+```text
+Log out now? [y/N]:
+```
 
-After updating, log out and back in (or restart the Plasma session) to ensure the new version of the KWin script is loaded.
+Choose `y` to start a fresh Plasma session immediately. Press Enter or choose
+`n` to remain logged in. The default is **No**.
+
+## Behaviour
+
+Immediately before the first relevant fullscreen window appears, the helper
+reads the real ThinkPad keyboard-backlight brightness and stores it for the
+current login session.
+
+- Plasma backlight off (`0`) → remains off after fullscreen
+- Brightness level `1` → restores level `1`
+- Brightness level `2` → restores level `2`
+
+While fullscreen is active, the backlight is set to `0`. When the final
+fullscreen window closes or leaves fullscreen, the stored value is restored.
 
 ## Uninstallation
-
-Run the uninstaller as your normal user:
 
 ```bash
 ./uninstall.sh
 ```
 
-It disables and removes the KWin script, deletes its saved brightness setting and systemd user service, and removes `/usr/local/bin/kbdlight`.
-
-## Project files
-
-- `kbdlight.c` — restricted helper that writes brightness values to the ThinkPad sysfs interface
-- `contents/code/main.js` — event-driven KWin script
-- `contents/config/main.xml` — KWin configuration schema
-- `metadata.json` — KWin package metadata
-- `kbdlight@.service` — systemd user service template
-- `install.sh` — installer and brightness selector
-- `uninstall.sh` — complete uninstaller
+After removal, the uninstaller offers the same optional logout prompt. The
+KWin script is disabled and removed before the prompt appears.
 
 ## License
 
-MIT
+MIT License
