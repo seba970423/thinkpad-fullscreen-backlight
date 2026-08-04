@@ -1,0 +1,17 @@
+{
+    "KPlugin": {
+        "Id": "thinkpad-fullscreen-backlight",
+        "Name": "ThinkPad Fullscreen Backlight",
+        "Description": "Turns off the keyboard backlight while a window is fullscreen",
+        "Version": "1.1",
+        "License": "MIT",
+        "Authors": [
+            {
+                "Name": "George"
+            }
+        ]
+    },
+    "X-Plasma-API": "javascript",
+    "X-Plasma-MainScript": "code/main.js",
+    "KPackageStructure": "KWin/Script"
+}
