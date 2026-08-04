@@ -66,6 +66,20 @@ fullscreen window closes or leaves fullscreen, the stored value is restored.
 After removal, the uninstaller offers the same optional logout prompt. The
 KWin script is disabled and removed before the prompt appears.
 
+## Manual override while fullscreen
+
+The extension turns the keyboard backlight off once when fullscreen begins.
+
+It does not lock the backlight off. If you manually change the keyboard
+backlight through GNOME while remaining fullscreen, that choice is respected.
+
+- Enter fullscreen → backlight turns off
+- Turn it on manually while fullscreen → it stays on
+- Turn it off manually while fullscreen → it stays off
+- Exit fullscreen → the latest user-selected level is preserved
+
+This matches the GNOME variant of this tool.
+
 ## License
 
 MIT License
